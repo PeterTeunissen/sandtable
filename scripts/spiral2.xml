@@ -1,0 +1,37 @@
+<Movie Name="Test" FPS="1">
+  <Frame Steps="0" Repeat="10">
+    <Thing Type="Spiral">
+      <Param Name="r1" Value="0.0"/>
+      <Param Name="r2" Value="125.0"/>
+      <Param Name="turns" Value="10.0"/>
+      <Param Name="angleStart" Value="0.0"/>
+      <Param Name="angleRate" Value="15.0"/>
+      <Param Name="base" Value="1.0"/>
+      <Param Name="fill" Value="No"/>
+      <Param Name="fitToTable" Value="No"/>
+      <Param Name="xCenter" Value="125.0"/> 
+      <Param Name="yCenter" Value="125.0"/> 
+    </Thing>
+</Frame>
+  <Frame Steps="0" Repeat="10">
+    <Thing Type="Rose">
+      <Param Name="petals" Value="7.0"/> 
+      <Param Name="angleStart" Value="0.0"/> 
+      <Param Name="angleShift" Value="0.0"/> 
+      <Param Name="angleRate" Value="3.0"/> 
+      <Param Name="turns" Value="20.0"/> 
+      <Param Name="fitToTable" Value="No"/> 
+      <Param Name="xCenter" Value="125.0"/> 
+      <Param Name="yCenter" Value="125.0"/> 
+      <Param Name="innerRadius" Value="18.75"/> 
+      <Param Name="outerRadius" Value="125.0"/> 
+    </Thing>
+  </Frame>
+  <Frame Steps="0" Repeat="10">
+    <Thing Type="Sisyphus">
+      <Param Name="filename" Value="thr/rose.thr"/> 
+      <Param Name="rotation" Value="0"/> 
+      <Param Name="background" Value="None"/> 
+    </Thing>
+  </Frame>
+</Movie>

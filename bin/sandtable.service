@@ -1,0 +1,18 @@
+[Unit]
+Description=Sand Table UI
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /var/www/sandtable/src/sandtable.py 
+WorkingDirectory=/var/www/sandtable
+StandardOutput=/var/log/scheduler.log
+StandardError=/var/log/scheduler.log
+SyslogIdentifier=alarm
+User=root
+Group=root
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+

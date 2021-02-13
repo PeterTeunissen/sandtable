@@ -1,0 +1,7 @@
+<Movie Name="Peter">
+  <Light>
+    <Ambient Hue="" Saturation="" Brightness="">
+    <Light Name="Orbit" Angle="" Radius="" Hue="" Saturation="" Brightness="">
+  </Light>
+</Movie>
+

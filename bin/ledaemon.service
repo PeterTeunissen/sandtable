@@ -1,0 +1,18 @@
+[Unit]
+Description=Led Strip Daemon
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /var/www/sandtable/src/ledaemon.py 
+WorkingDirectory=/var/www/sandtable
+StandardOutput=/var/log/scheduler.log
+StandardError=/var/log/scheduler.log
+SyslogIdentifier=alarm
+User=root
+Group=root
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+

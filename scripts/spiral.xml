@@ -1,0 +1,28 @@
+<Movie Name="Test" FPS="1">
+  <Frame Steps="0" Repeat="10">
+    <Thing Type="Spiral">
+      <Param Name="r1" Value="0.0"/>
+      <Param Name="r2" Value="125.0"/>
+      <Param Name="turns" Value="10.0"/>
+      <Param Name="angleStart" Value="0.0"/>
+      <Param Name="angleRate" Value="15.0"/>
+      <Param Name="base" Value="1.0"/>
+      <Param Name="fill" Value="No"/>
+      <Param Name="fitToTable" Value="No"/>
+      <Param Name="xCenter" Value="125.0"/> 
+      <Param Name="yCenter" Value="125.0"/> 
+    </Thing>
+    <Thing Type="Spiral">
+      <Param Name="r1" Value="0.0"/>
+      <Param Name="r2" Value="50.0"/>
+      <Param Name="turns" Value="2.0"/>
+      <Param Name="angleStart" Value="0.0"/>
+      <Param Name="angleRate" Value="15.0"/>
+      <Param Name="base" Value="1.0"/>
+      <Param Name="fill" Value="No"/>
+      <Param Name="fitToTable" Value="No"/>
+      <Param Name="xCenter" Value="125.0"/> 
+      <Param Name="yCenter" Value="125.0"/> 
+    </Thing>
+  </Frame>
+</Movie>
