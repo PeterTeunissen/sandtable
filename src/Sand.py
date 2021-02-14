@@ -11,7 +11,7 @@ drawers = [
     "Lorenz", "Shingles", "Lindenmayer",
     "Rocks", "Wood", "Grass",
     "WebPic", "Clipart", "Picture",
-    "Sisyphus", "Func3d", "SpiralArms",
+    "Sisyphus", "GCode", "Func3d", "SpiralArms",
     "Bulbs", "Engine", "ESpiral",
     "Man", "RandomDraw", "Move",
 ]
@@ -87,8 +87,6 @@ ledPatterns = [
 	"Bicolor-Chase",
 	"Tricolor-Chase" ]
 
-
-
 # Constants
 SERVER_LOG = "/var/log/sandtable.log"
 
@@ -97,6 +95,7 @@ DATA_PATH = "data/"
 PICTURE_PATH = "pictures/"
 CLIPART_PATH = "clipart/"
 THR_PATH = "thr/"
+GCODE_PATH = "gcode/"
 MOVIE_SCRIPT_PATH = "scripts/"
 MOVIE_OUTPUT_PATH = "movies/"
 STORE_PATH = "store/"

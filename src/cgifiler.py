@@ -1,7 +1,7 @@
 from bottle import request, route, get, post, template, SimpleTemplate
 import os
 import logging
-from Sand import PICTURE_PATH, CLIPART_PATH, THR_PATH, MOVIE_SCRIPT_PATH, STORE_PATH, MOVIE_OUTPUT_PATH
+from Sand import PICTURE_PATH, CLIPART_PATH, THR_PATH, GCODE_PATH, MOVIE_SCRIPT_PATH, STORE_PATH, MOVIE_OUTPUT_PATH
 from cgistuff import cgistuff
 
 
@@ -61,6 +61,18 @@ class ftSisyphus(ftBase):
                <img src="images/thr.png" width="80">
                </button>""" % fn
 
+class ftGCode(ftBase):
+    def __init__(self):
+        self.path = GCODE_PATH
+        self.columns = 6
+        self.filter = ['gcode']
+        self.allowUpload = True
+
+    def imgFunc(self, f, fn, p):
+        return """<button type="button" class="filer" onclick='mySubmit("draw", "method","GCode", "filename","%s")'>
+               <img src="images/GCode.png" width="80">
+               </button>""" % fn
+
 class ftScripts(ftBase):
     def __init__(self):
         self.path = MOVIE_SCRIPT_PATH
@@ -114,6 +126,7 @@ filetypes = {
     'Pictures':         ftPictures(),
     'Clipart':          ftClipart(),
     'Sisyphus':         ftSisyphus(),
+    'GCode':            ftGCode(),
     'Movie Scripts':    ftScripts(),
     'Movies':           ftMovies(),
     'Saved Drawings':   ftDrawings(),
