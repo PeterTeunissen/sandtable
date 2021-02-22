@@ -27,6 +27,11 @@ MACHINE_UNITS       = "mm"
 MACHINE_FEED        = 5000          # mm/minute
 MACHINE_ACCEL       = 200          # mm/sec^2
 
+LED_PARAMS = {
+    'port': "/dev/ttyUSB1",
+    'baud': 74880
+}
+
 MACHINE_PARAMS = {
     'port': "/dev/ttyUSB0",
     'baud': 115200,

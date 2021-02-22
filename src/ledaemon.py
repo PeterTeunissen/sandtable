@@ -6,13 +6,12 @@ import socket
 import socketserver
 from threading import Thread
 from importlib import import_module
-
 from ledable import Ledable, ledPatternFactory
 from tcpserver import StoppableTCPServer
 from dialog import Params
 from Sand import LED_DRIVER, LED_ROWS, LED_COLUMNS, LED_MAPPING, LED_PARAMS,\
     LED_HOST, LED_PORT, LED_PERIOD
-
+from ledapi import ledapi
 
 # The specific LED driver is specified in the machine configuration
 Leds = import_module('machines.%s' % LED_DRIVER)
@@ -36,6 +35,9 @@ class LedThread(Thread):
         self.leds = Leds.Leds(LED_ROWS, LED_COLUMNS, LED_MAPPING, LED_PARAMS)
         self.leds.refresh()
         self.setPattern(startupPattern(LED_COLUMNS, LED_ROWS), None)
+        self.status=None
+        self.ledstatus=None
+        self.cnt=0
 
     def run(self):
         self.running = True
@@ -47,14 +49,23 @@ class LedThread(Thread):
                         self.leds.refresh()
                 except (GeneratorExit, StopIteration):
                     # Generator has finished, turn off the lights
-                    logging.info("Pattern has finished")
+                    #logging.info("Pattern has finished")
                     self.leds.clear()
                     self.leds.refresh()
                     self.generator = None
-                    
+ 
             sts = self.leds.status()
-            if sts:
-                logging.info("Received: %s" % sts)
+            if sts!="":
+                logging.info("ledaemon Received: %s" % sts)
+                try:
+                    st = sts.decode()
+                    #logging.info("Decode done: %s" % st)
+                    if st.find("{")!=-1 and st.find("}")!=-1:
+                        self.ledstatus = st
+                        self.cnt=self.cnt+1
+                        #logging.info("Updated ledstatus")
+                except:
+                    logging.info("Exception caught")
 
             time.sleep(LED_PERIOD)
         self.leds.close()
@@ -71,8 +82,41 @@ class LedThread(Thread):
     def stop(self):
         self.running = False
 
+    def updateStatus(self,c):
+        while c==self.cnt:
+            time.sleep(0.01)
+            
+    def setSpeed(self,speed):
+        c=self.cnt
+        self.leds.setSpeed(speed)
+        self.updateStatus(c)
+            
+    def setBrightness(self,brightness):
+        c=self.cnt
+        self.leds.setBrightness(brightness)
+        self.updateStatus(c)
+
+    def setMode(self,mode):
+        c=self.cnt
+        self.leds.setMode(mode)
+        self.updateStatus(c)
+
+    def setAutoCycle(self,autocycle):
+        c=self.cnt
+        self.leds.setAutoCycle(autocycle)
+        self.updateStatus(c)
+
+    def setColor(self,color):
+        c=self.cnt
+        self.leds.setColor(color)
+        self.updateStatus(c)
+
+    def getLedstatus(self):
+        return self.ledstatus
+
     def status(self):
-        return {'running': self.generator is not None, 'pattern': self.pattern}
+        s = {'running': self.generator is not None, 'pattern': self.pattern is not None, 'status': self.status is not None}
+        return s
 
 
 class MyHandler(socketserver.StreamRequestHandler):
@@ -85,26 +129,31 @@ class MyHandler(socketserver.StreamRequestHandler):
         cmd, pattern, p = json.loads(req)
         logging.info("cmd:%s pattern:%s p:%s" % (cmd,pattern,p))
         if cmd == 'pattern':
-            params = Params()
-            params.update(p)
-            logging.info("Request: %s %s %s" % (cmd, pattern, params))
-            pat = ledPatternFactory(pattern, LED_COLUMNS, LED_ROWS)
-            self.ledThread.setPattern(pat, params)
+            pass
+            #params = Params()
+            #params.update(p)
+            #logging.info("Request: %s %s %s" % (cmd, pattern, params))
+            #pat = ledPatternFactory(pattern, LED_COLUMNS, LED_ROWS)
+            #self.ledThread.setPattern(pat, params)
         elif cmd == 'status':
             pass
+        elif cmd == 'ledstatus':
+            self.ledstatus = self.ledThread.getLedstatus()
         elif cmd == 'restart':
             self.server.stop()
         elif cmd == 'color':
-            self.ledThread.setColor(pat, params)
+            self.ledThread.setColor(pattern)
         elif cmd == 'speed':
-            self.ledThread.setSpeed(pat, params)
+            self.ledThread.setSpeed(pattern)
         elif cmd == 'mode':
-            self.ledThread.setMode(pat, params)
+            self.ledThread.setMode(pattern)
         elif cmd == 'brightness':
-            self.ledThread.setBrightness(pat, params)
+            self.ledThread.setBrightness(pattern)
         elif cmd == 'autoCycle':
-            self.ledThread.setAutoCycle(pat, params)
-        self.wfile.write(bytes(json.dumps(self.ledThread.status())+'\n', encoding='utf-8'))
+            self.ledThread.setAutoCycle(pattern)
+        self.ledstatus = self.ledThread.getLedstatus()
+        s = self.ledstatus
+        self.wfile.write(bytes(json.dumps(s), encoding='utf-8'))
 
 
 if __name__ == "__main__":

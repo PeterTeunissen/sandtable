@@ -61,18 +61,20 @@ def drawPage():
 
         # If 'Draw in Sand' has been requested then do it!
         if action == 'doit' or action == 'Draw in Sand!':
-            with schedapi.schedapi() as sched:
-                sched.demoHalt()
+            #with schedapi.schedapi() as sched:
+            #    sched.demoHalt()
             History.history(params, sandable, chains)
             with mach.mach() as e:
                 e.run(chains, boundingBox, MACHINE_FEED, TABLE_UNITS, MACHINE_UNITS)
+            errors = "Drawing send to table"
 
         # If 'Abort' has been requested stop the drawing
         if action == 'abort' or action == 'Abort!':
-            with schedapi.schedapi() as sched:
-                sched.demoHalt()
+            #with schedapi.schedapi() as sched:
+            #    sched.demoHalt()
             with mach.mach() as e:
                 e.stop()
+            errors = "Drawing stopped!"
 
         # If 'Save' has been requested save the drawing's parameters
         if action == 'save' or action == 'Save':
@@ -83,6 +85,7 @@ def drawPage():
                 errors = 'No name was specified'
             else:
                 History.save(params, sandable, chains, name)
+                errors = "Drawing saved."
 
         # If 'Export' has been requested, export to an SVG file
         if action == 'export' or action == 'Export':
@@ -93,6 +96,7 @@ def drawPage():
                 errors = 'No name was specified'
             else:
                 Chains.makeSVG(chains, "%s%s.svg" % (DATA_PATH, name))
+                errors = "Drawing exported"
 
         # Estimate the amount of time it will take to draw
         chains = Chains.bound(chains, boundingBox)

@@ -3,7 +3,9 @@ from pytz import utc
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 import time
+from datetime import datetime
 import logging
 import json
 import socket
@@ -12,6 +14,7 @@ from tcpserver import StoppableTCPServer
 from threading import Thread
 from collections import deque
 import random
+from pprint import pprint
 
 from Sand import DATA_PATH, TABLE_WIDTH, TABLE_LENGTH, BALL_SIZE, TABLE_UNITS,\
    MACHINE_UNITS, MACHINE_ACCEL, MACHINE_FEED,\
@@ -26,6 +29,7 @@ import digitalio
 import mach
 from ledable import ledPatternFactory
 import ledapi
+from schedapi import JobInfo, TriggerInfo
 
 # Parameters
 POLLING_DELAY = 0.100     # 1/10 second
@@ -66,20 +70,20 @@ job_defaults = {
 
 
 def JobDemo():
-    demo.demoOnce()
+    jobHanlder.demoOnce()
 
 
-class Demo(Thread):
+class JobHandler(Thread):
     DIE, QUIET, HALT, RUNNING = -1, 0, 1, 2
 
     def __init__(self, pause=30):
-        super(Demo, self).__init__()
+        super(JobHandler, self).__init__()
         self._state = self.QUIET
         self._count = 0
         self._pause = pause
 
     def run(self):
-        logging.info("Demo active")
+        logging.info("JobHanlder active")
         while self._state != self.DIE:
             if self._state == self.QUIET:
                 time.sleep(POLLING_DELAY)
@@ -101,7 +105,7 @@ class Demo(Thread):
                 self._lightsOff()
                 self._drawHalt()
                 self._state = self.QUIET
-        logging.info("Demo exiting")
+        logging.info("JobHandler exiting")
 
     def demoContinuous(self, count=-1):
         logging.info("demoContinuous(%d) has been called" % count)
@@ -178,103 +182,140 @@ class Demo(Thread):
         with mach.mach() as e:
             e.stop()
 
+    def handleJob(self,data):
+        logging.info("LedThread handlejob")
 
-class ProxSwitchThread(Thread):
-    """
-        GPIO listener thread for proximity switch
-        callback - gets passed the number of taps
-        window - the timeframe in seconds
-    """
-
-    def __init__(self, callback, window=PROX_SWITCH_SECS):
-        super(ProxSwitchThread, self).__init__()
-        self.pin = PROX_PIN
-        self.window = window
-        self.callback = callback
-        self.q = deque(maxlen=window)
-
-    def run(self):
-        logging.info("ProxSwitchThread active")
-        self.running = True
-        while self.running:
-            t = time.time()
-            if self.pin.value:
-                self.q.append(t)
-            if len(self.q) and t - self.q[0] >= self.window:
-                self.callback(len(self.q))
-                self.q.clear()
-            time.sleep(POLLING_DELAY)
-
-        logging.info("ProxSwitchThread exiting")
-
-    def stop(self):
-        self.running = False
-
-
-class MyHandler(socketserver.StreamRequestHandler):
+class SchedulerSocketHandler(socketserver.StreamRequestHandler):
     def setup(self):
-        super(MyHandler, self).setup()
-        self.demo = self.server.demo
+        super(SchedulerSocketHandler, self).setup()
+        self.jobHandler = self.server.jobHandler
+        self.scheduler = self.server.scheduler
 
     def handle(self):
         req = self.rfile.readline().strip()
         command, data = json.loads(req)
-        logging.debug("Command: %s, %s" % (command, data))
+        logging.info("SchedulerSocketHandler.handle Command: %s, Params: %s" % (command, data))
         if command == 'status':
             pass
         elif command == 'demoOnce':
-            self.demo.demoOnce()
+            self.jobHandler.demoOnce()
         elif command == 'demoContinuous':
-            self.demo.demoContinuous()
+            self.jobHandler.demoContinuous()
         elif command == 'demoHalt':
-            self.demo.demoHalt()
+            self.jobHandler.demoHalt()
         elif command == 'restart':
             self._restart()
+        elif command == 'jobRun':
+            self._jobRun(data)
         elif command == 'jobAdd':
             self._jobAdd(data)
         elif command == 'jobDelete':
-            pass    # FIX: Finish code
+            self._deleteJob(data)
         elif command == 'jobList':
-            pass    # FIX: Finish code
+            self._listJobs(data)
         else:
             logging.warning("Unknown command: %s" % command)
-        self.wfile.write(bytes(json.dumps({'state': self.demo._state})+'\n', encoding='utf-8'))
+        resp = json.dumps({'state': self.jobHandler._state , 'jobs': self._listJobs(None)})
+        self.wfile.write(bytes(resp, encoding='utf-8'))
 
     def _restart(self):
         self.server.stop()
 
-    def _jobAdd(data):
-        pass    # FIX: CODE ISN'T DONE
+    def _listJobs(self,data):        
+        js = []
+        for job in scheduler.get_jobs():
+            j = {}
+            j['id']=job.id
+            j['name']=job.name
+            j['function']=getattr(job.func, '__name__', repr(job.func))
+            j['args']=job.args
+            j['trigger']=str(job.trigger)
+            j['next_run_time']=str(job.next_run_time)
+            js.append(j)
+        return js
+        
+    def _deleteJob(self,data):
+        for job in self.scheduler.get_jobs():
+            if job.id==data['id']:
+                logging.info("Deleting Job: %s" % job.id)
+                job.remove()
+        
+    def handleMe(self,data):
+        logging.info("socket handleme")
 
+    def _jobRun(self,data):
+        for job in self.scheduler.get_jobs():
+            if job.id==data['id']:
+                logging.info("Running Job: %s" % job.id)
+                job.modify(next_run_time=datetime.utcnow())
+
+    def _jobAdd(self,data):
+        p = {
+          "job": data['job'],
+          "params": data['params']
+        }
+        job = self.scheduler.add_job(self.server.cb, name=data['name'], args=[p], trigger=CronTrigger.from_crontab(data['cron']))
+        logging.info("New jobid %s" % job.id)
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
     logging.info('Starting the SandTable scheduler daemon')
 
-    demo = Demo()
-    demo.start()
-
-    # Start listening for taps from the proximity switch
-    proxSwitch = ProxSwitchThread(demo.proxCallback)
-    proxSwitch.start()
+    jobHandler = JobHandler()
+    jobHandler.start()
 
     # Start the background job scheduler (which potentially means start servicing jobs)
     scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
     scheduler.start()
 
     # FIX: Kluge to clear out the scheduler and start a random drawing everyday at 3:00 am.
-    def kluge():
-        logging.info("Kluge triggered")
-        if SCHEDULER_ENABLE:
-            logging.info("Running single demo")
-            demo.demoOnce()
-        else:
-            logging.info("Schedule is disabled")
-        logging.info("Kluge returned")
+    #def kluge():
+    #    logging.info("Kluge triggered")
+    #    if SCHEDULER_ENABLE:
+    #        logging.info("Running single demo")
+    #        demo.demoOnce()
+    #    else:
+    #        logging.info("Schedule is disabled")
+    #    logging.info("Kluge returned")
 
-    for job in scheduler.get_jobs():
-        job.remove()
-    job = scheduler.add_job(kluge, 'cron', hour=7)
+    def handleJob(data):
+        logging.info("Job triggerd: %s" % data['job'])
+        if data['job']=='lightsOn':
+            with ledapi.ledapi() as led:
+                led.setBrightness(200)
+        if data['job']=='lightsOff':
+            with ledapi.ledapi() as led:
+                led.setBrightness(0)
+        if data['job']=='GCode':
+            boundingBox = [(0.0, 0.0), (TABLE_WIDTH, TABLE_LENGTH)]
+            sand = sandableFactory("GCode", TABLE_WIDTH, TABLE_LENGTH, BALL_SIZE, TABLE_UNITS)
+            params = Params(sand.editor)
+            params['filename']=data['params']
+            try:
+                chains = sand.generate(params)
+                History.save(params, "GCode", chains, "lastdemo")
+                with mach.mach() as e:
+                    e.run(chains, boundingBox, MACHINE_FEED, TABLE_UNITS, MACHINE_UNITS)
+            except Exception as e:
+                logging.warning("Tried %s but failed with %s" % (sand, e))
+        logging.info("Job triggerd.")
+        pprint(data)
+
+    #for job in scheduler.get_jobs():
+    #    print(job)
+    #    job.remove()
+        
+    # add_job(func, trigger=None, args=None, kwargs=None, id=None, name=None, misfire_grace_time=undefined, coalesce=undefined, max_instances=undefined, next_run_time=undefined, jobstore='default',
+    # executor='default', replace_existing=False, **trigger_args)
+    
+    #p = {
+    #  "job":"testj"
+    #}
+    #job = scheduler.add_job(handleJob, 'cron', args=[p], second="*/15")
+        
+    #print("Current Jobs:")
+    #for job in scheduler.get_jobs():
+    #    print(job)
 
     # Start the socket server and listen for requests
     # Retry logic has been implemented because sometimes sockets don't release quickly
@@ -283,7 +324,7 @@ if __name__ == "__main__":
     server = None
     while retries > 0:
         try:
-            server = StoppableTCPServer((SCHEDULER_HOST, SCHEDULER_PORT), MyHandler)
+            server = StoppableTCPServer((SCHEDULER_HOST, SCHEDULER_PORT), SchedulerSocketHandler)
             logging.info("SocketServer connected")
             break
         except socket.error as e:
@@ -291,12 +332,13 @@ if __name__ == "__main__":
             retries -= 1
             time.sleep(10.0)
     if server:
-        server.demo = demo
+        server.cb=handleJob
+        server.jobHandler = jobHandler
+        server.scheduler = scheduler
         server.serve()
     logging.info("Out of server loop!")
 
     scheduler.shutdown()
-    proxSwitch.stop()
-    demo.stop()
+    jobHandler.stop()
 
     exit(1)

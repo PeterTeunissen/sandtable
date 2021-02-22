@@ -15,10 +15,10 @@ class Lighter(Ledable):
         ]
 
     def generator(self, leds, params):
-        leds.setColor(params.color)
-        leds.setSpeed(params.speed)
-        leds.setBrightness(params.brightness)
-        leds.setAutoCycle(params.autoCycle)
+        #leds.setColor(params.color)
+        #leds.setSpeed(params.speed)
+        #leds.setBrightness(params.brightness)
+        #leds.setAutoCycle(params.autoCycle)
 
         yield True
         while True:

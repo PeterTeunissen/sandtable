@@ -13,10 +13,9 @@
    <center>
     <img class="plan" src="{{imagefile}}" width="{{width}}" height="{{height}}"><br>
     %if errors:
-      <div class="error">Error: {{errors}}</div>
+      <div class="error">Messages/Errors: {{errors}}</div>
     %end
     {{!editor}}
    </center>
-  </td>
  </tr>
 </table>

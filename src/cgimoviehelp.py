@@ -30,8 +30,8 @@ The table below lists the Types of Things, and the first column indicates the Na
 The other columns briefly describe the fields and their units.""", quote=True)
 
 
-@route('/help')
-@get('/help')
+@route('/moviehelp')
+@get('/moviehelp')
 def helpPage():
     return [template('help-page', overview=overview, sandables=drawers, sandableFactory=sandableFactory,tableWidth=TABLE_WIDTH, tableLength=TABLE_LENGTH, ballSize=BALL_SIZE, tableUnits=TABLE_UNITS)]
 

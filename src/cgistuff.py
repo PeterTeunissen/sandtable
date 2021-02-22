@@ -8,6 +8,7 @@ menuItems = (
     ('Watch Movie', 'watch'),
     ('Make Movie', 'movie'),
     ('Filer', 'filer'),
+    ('Jobs','jobs'),
     ('Admin', 'admin'),
 )
 

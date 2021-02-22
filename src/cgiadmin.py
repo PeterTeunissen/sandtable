@@ -75,6 +75,7 @@ def adminPage():
         "mach_res_a":   (_machResetA,   "Mach Reset and Reinitialize - Reset everything motor control related"),
         "sched_log":    (_schedLog,     "Scheduler log - view the log of the demo scheduler"),
         "sched_res":    (_schedReset,   "Scheduler Reset - Reset the scheduler/switch monitor"),
+        "sched_jobs":   (_schedJobs,    "Scheduler Show Jobs - Shows jobs in the scheduler"),
         "demo_cont":    (_schedDemo,    "Demo mode - Go into continuous demonstration mode"),
         "demo_once":    (_schedOnce,    "Demo mode - Single demo"),
         "demo_halt":    (_schedHalt,    "Demo mode - Exit"),
@@ -164,6 +165,11 @@ def _schedReset():
     return 'Restarting scheduler', None
 
 
+def _schedJobs():
+    j = schedapi.schedapi().listJobs()
+    return str(j), _escapeFile(SCHEDULER_LOG)
+       
+
 def _schedOnce():
     with schedapi.schedapi() as sched:
         sched.demoOnce()
@@ -174,7 +180,6 @@ def _schedDemo():
     with schedapi.schedapi() as sched:
         sched.demoContinuous()
     return 'Continuous Demo Mode', None
-
 
 def _schedHalt():
     with schedapi.schedapi() as sched:

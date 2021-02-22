@@ -5,7 +5,7 @@
     {{!filenames}}
   </select>
   <button class="load" name="action" type="submit" value="load">Load</button>
-  <span class="navigation"><a href="help" target="sand_help">Help!</a></span>
+  <span class="navigation"><a href="moviehelp" target="sand_help">Help!</a></span>
  </div>
  <textarea name="script" rows=34 cols="70">{{script}}</textarea>
  <div class="savebox">

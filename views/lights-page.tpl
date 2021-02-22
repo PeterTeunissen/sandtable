@@ -2,7 +2,7 @@
   <tr>
     <td>
       <form method="post" action="lights">
-        <table class="buttons">
+        <table>
             %r=-1
             %for num, pat in enumerate(ledPatterns):
                 %p,q=divmod(num,3)
@@ -30,8 +30,9 @@
    <form method="post" action="lights" class="auto_submit_form">
     <input name="method" type="hidden" value="{{pattern}}">
     {{!editor}}
-    <button class="doit" name="action" type="submit" value="doit">Lights!</button>
+    <button class="doit" name="action" type="submit" value="doit">Lights!</button>     
    </form>
+   </td>
   </td>
  </tr>
 </table>

@@ -30,6 +30,7 @@ def loadGCode(filename, xc=0, yc=0, aplus=0, multiplier=1):
             if line.startswith(';') or line.startswith('/') or not line:
                 continue
             print("Gcode line:",line)
+            parts = line.split(' ')
             if parts[0]=="G01":
                 x=-1.0
                 y=-1.0

@@ -1,3 +1,5 @@
+import logging
+
 class Sandable():
     """ Base class for sandtable drawable classes. """
     editor = []
@@ -9,7 +11,9 @@ class Sandable():
 def sandableFactory(sandable, width, length, ballSize, units):
     """ Dynamically load and instantiate a drawable object. """
     from importlib import import_module
-
+    
+    logging.info("sandableFactory for: %s" % sandable)
+    
     sm = import_module('draw.%s' % sandable)
     return sm.Sander(width, length, ballSize, units)
 

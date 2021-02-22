@@ -9,11 +9,12 @@ import cgilights
 import cgipictures
 import cgiwatch
 import cgimovie
-import cgihelp
+import cgimoviehelp
+import cgicronhelp
 import cgiadmin
 import cgifiler
 import cgidhelp
-
+import cgijobs
 
 @route('/images/<filename>')
 def server_static(filename):

@@ -6,7 +6,6 @@ import re
 import time
 from machine import Machine
 
-
 POSITION_POLL_FREQ = 30     # Poll for status every 30 instructions
 POSITION_POLL_TIME = 5      # Or every 5 seconds
 
