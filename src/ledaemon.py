@@ -16,7 +16,6 @@ from ledapi import ledapi
 # The specific LED driver is specified in the machine configuration
 Leds = import_module('machines.%s' % LED_DRIVER)
 
-
 class startupPattern(Ledable):
     def __init__(self, cols, rows):
         self.editor = []
@@ -63,7 +62,9 @@ class LedThread(Thread):
                     if st.find("{")!=-1 and st.find("}")!=-1:
                         self.ledstatus = st
                         self.cnt=self.cnt+1
-                        #logging.info("Updated ledstatus")
+                        logging.info("Updated ledstatus")
+                    else:
+                        logging.info("Discarded")
                 except:
                     logging.info("Exception caught")
 
@@ -85,12 +86,12 @@ class LedThread(Thread):
     def updateStatus(self,c):
         while c==self.cnt:
             time.sleep(0.01)
-            
+
     def setSpeed(self,speed):
         c=self.cnt
         self.leds.setSpeed(speed)
         self.updateStatus(c)
-            
+
     def setBrightness(self,brightness):
         c=self.cnt
         self.leds.setBrightness(brightness)
@@ -117,6 +118,9 @@ class LedThread(Thread):
     def status(self):
         s = {'running': self.generator is not None, 'pattern': self.pattern is not None, 'status': self.status is not None}
         return s
+
+    def handleMqtt(self,msg):
+        print("LedThread handleMqtt -> " + msg.topic + " " + str(msg.payload.decode()))
 
 
 class MyHandler(socketserver.StreamRequestHandler):
@@ -154,7 +158,6 @@ class MyHandler(socketserver.StreamRequestHandler):
         self.ledstatus = self.ledThread.getLedstatus()
         s = self.ledstatus
         self.wfile.write(bytes(json.dumps(s), encoding='utf-8'))
-
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)

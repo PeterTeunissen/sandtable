@@ -30,6 +30,7 @@ import mach
 from ledable import ledPatternFactory
 import ledapi
 from schedapi import JobInfo, TriggerInfo
+import pprint
 
 # Parameters
 POLLING_DELAY = 0.100     # 1/10 second
@@ -183,7 +184,7 @@ class JobHandler(Thread):
             e.stop()
 
     def handleJob(self,data):
-        logging.info("LedThread handlejob")
+        logging.info("LedThread handleJob")
 
 class SchedulerSocketHandler(socketserver.StreamRequestHandler):
     def setup(self):
@@ -221,7 +222,7 @@ class SchedulerSocketHandler(socketserver.StreamRequestHandler):
     def _restart(self):
         self.server.stop()
 
-    def _listJobs(self,data):        
+    def _listJobs(self,data):
         js = []
         for job in scheduler.get_jobs():
             j = {}
@@ -233,15 +234,15 @@ class SchedulerSocketHandler(socketserver.StreamRequestHandler):
             j['next_run_time']=str(job.next_run_time)
             js.append(j)
         return js
-        
+
     def _deleteJob(self,data):
         for job in self.scheduler.get_jobs():
             if job.id==data['id']:
                 logging.info("Deleting Job: %s" % job.id)
                 job.remove()
-        
+
     def handleMe(self,data):
-        logging.info("socket handleme")
+        logging.info("socket handleMe")
 
     def _jobRun(self,data):
         for job in self.scheduler.get_jobs():
@@ -251,8 +252,8 @@ class SchedulerSocketHandler(socketserver.StreamRequestHandler):
 
     def _jobAdd(self,data):
         p = {
-          "job": data['job'],
-          "params": data['params']
+          "jobtype": data['jobtype'],
+          "params": data
         }
         job = self.scheduler.add_job(self.server.cb, name=data['name'], args=[p], trigger=CronTrigger.from_crontab(data['cron']))
         logging.info("New jobid %s" % job.id)
@@ -279,40 +280,45 @@ if __name__ == "__main__":
     #    logging.info("Kluge returned")
 
     def handleJob(data):
-        logging.info("Job triggerd: %s" % data['job'])
-        if data['job']=='lightsOn':
-            with ledapi.ledapi() as led:
-                led.setBrightness(200)
-        if data['job']=='lightsOff':
-            with ledapi.ledapi() as led:
-                led.setBrightness(0)
-        if data['job']=='GCode':
+        logging.info("Job data starting")
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(data)
+        #logging.info("Job triggerd: %s" % data[0]['params']['name'])
+        if data['jobtype']=='lightjob':
+            with ledapi.ledapi() as led:                
+                led.setBrightness(data['params']['brightness'])
+                led.setMode(data['params']['mode'])
+                led.setSpeed(data['params']['speed'])
+                led.setColor(data['params']['color'])
+                led.setAutoCycle(data['params']['autoCycle'])
+        if data['jobtype']=='drawjob':
             boundingBox = [(0.0, 0.0), (TABLE_WIDTH, TABLE_LENGTH)]
             sand = sandableFactory("GCode", TABLE_WIDTH, TABLE_LENGTH, BALL_SIZE, TABLE_UNITS)
             params = Params(sand.editor)
-            params['filename']=data['params']
+            params['filename']=data['params']['filename']
+            if data['params']['randomize']=="True":
+                params.randomize(sand.editor)
             try:
                 chains = sand.generate(params)
-                History.save(params, "GCode", chains, "lastdemo")
+                # History.save(params, "GCode", chains, "lastjob")
+                History.historyWithType(params, "GCode", chains, "lastjob") 
                 with mach.mach() as e:
                     e.run(chains, boundingBox, MACHINE_FEED, TABLE_UNITS, MACHINE_UNITS)
             except Exception as e:
                 logging.warning("Tried %s but failed with %s" % (sand, e))
-        logging.info("Job triggerd.")
-        pprint(data)
+        logging.info("Job trigger done.")
 
     #for job in scheduler.get_jobs():
     #    print(job)
     #    job.remove()
-        
     # add_job(func, trigger=None, args=None, kwargs=None, id=None, name=None, misfire_grace_time=undefined, coalesce=undefined, max_instances=undefined, next_run_time=undefined, jobstore='default',
     # executor='default', replace_existing=False, **trigger_args)
-    
+
     #p = {
     #  "job":"testj"
     #}
     #job = scheduler.add_job(handleJob, 'cron', args=[p], second="*/15")
-        
+
     #print("Current Jobs:")
     #for job in scheduler.get_jobs():
     #    print(job)

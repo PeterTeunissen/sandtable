@@ -62,7 +62,7 @@ button.rename	{ color: #FFFFFF; background-color: #00007F; font-size: 80%; margi
 button.sandable	{ background-color: #6F6F6F; border: 2px solid #6F6F6F; margin: 0px 0px 0px 0px; padding: 0px }
 button.selected	{ background-color: #000000; border: 2px solid #000000; margin: 0px 0px 0px 0px; padding: 0px }
 
-button.history	    { background-color: #6F6F6F; border: 2px solid #6F6F6F; margin: 0px 0px 0px 0px; padding: 0px }
+button.history	    { background-color: #31c4dc; border: 2px solid #6F6F6F; margin: 0px 0px 0px 0px; padding: 0px }
 button.picture      { background-color: #FFFFFF; border: 2px solid #FFFFFF; margin: 0px 0px 0px 0px; padding: 0px }
 
 input.save	{ background: #DFDFFF; color: black; width: 300px; vertical-align: middle }

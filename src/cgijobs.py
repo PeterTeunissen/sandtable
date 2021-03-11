@@ -6,7 +6,7 @@ import schedapi
 from pprint import pprint
 from jobable import jobFactory
 import logging
-from Sand import MOVIE_SCRIPT_PATH
+from Sand import GCODE_PATH, ledPatterns
 
 @route('/jobs')
 @get('/jobs')
@@ -27,51 +27,92 @@ def jobsPage():
             d['id']=form.jobId
             sched.runJob(d)
             
-    if form.action=='add':
+    if form.action=='addlightjob':
+        with schedapi.schedapi() as sched:
+            li = ledPatterns.index(form.modeStr)-1
+            d={}
+            d['jobtype']="lightjob"
+            d['name']=form.name
+            d['cron']=form.cron
+            d['color']=form.color
+            d['speed']=form.speed
+            d['brightness']=form.brightness
+            d['autoCycle']=form.autoCycle
+            d['mode']= str(li)
+            d['modeName']=form.modeStr
+            sched.addJob(d)
+
+    if form.action=='adddrawjob':
         with schedapi.schedapi() as sched:
             d={}
+            d['jobtype']="drawjob"
             d['name']=form.name
             d['cron']=form.cron
             d['filename']=form.filename
-            d['params']=form.params
-            d['job']=form.job
+            d['randomize']=form.randomizeFile
             sched.addJob(d)
-        
+
     with schedapi.schedapi() as sched:
         jobs = sched.getJobs()
 
-    jobUI = jobFactory("Job-Params")
+    if form.formType=="lightjob":
+        jobUI = jobFactory("Lights-Job-Params")
+        jobType="lightjob"
+    elif form.formType=="drawjob":
+        jobUI = jobFactory("Draw-Job-Params")
+        jobType="drawjob"
+    else:
+        jobUI = jobFactory("Draw-Job-Params")
+        jobType="drawjob"
 
     pr = Params(jobUI.editor)    
 
-    if form.params:
-        pr['params']=form.params
-    else:
-        pr['params']=""
+    #d['mode']= str(li)
 
-    if form.job:
-        pr['job']=form.job
+    if form.brightness:
+        pr['brightness']=form.brightness
     else:
-        pr['job']=""
+        pr['brightness']=100
+
+    if form.autoCycle:
+        pr['autoCycle']=form.autoCycle
+    else:
+        pr['autoCycle']=False
         
-    if form.cron:
-        pr['cron']=form.cron
+    if form.speed:
+        pr['speed']=form.speed
     else:
-        pr['cron']=""
+        pr['speed']=9000
         
-    if form.name:
-        pr['name']=form.name
-    else:
-        pr['name']=""
+#    if form.color:
+#        pr['color']=form.color
+#    else:
+#        pr['color']=(255,0,0)
         
-    if form.filename:
-        pr['filename']=form.filename
-    else:
-        pr['filename']=MOVIE_SCRIPT_PATH
+#    if form.randomizeFile:
+#        pr['randomizeFile']=form.randomizeFile
+#    else:
+#        pr['randomizeFile']=False
+        
+#    if form.cron:
+#        pr['cron']=form.cron
+#    else:
+#        pr['cron']=""
+        
+#    if form.name:
+#        pr['name']=form.name
+#    else:
+#        pr['name']=""
+        
+#    if form.filename:
+#        pr['filename']=form.filename
+#    else:
+#        pr['filename']=GCODE_PATH
         
     pr['errors']=[]
 
-    d = Dialog(jobUI.editor, form, pr, autoSubmit=False)
+    d = Dialog(jobUI.editor, form, None, autoSubmit=False)
+#    d = Dialog(jobUI.editor, form, pr, autoSubmit=False)
     params = d.getParams()
     
     #if form.method:
@@ -85,5 +126,5 @@ def jobsPage():
         
     return [
         cstuff.standardTopStr(),
-        template('jobs-page', jobs=jobs, editor=d.html()),
+        template('jobs-page', jobs=jobs, editor=d.html(), jobType=jobType),
         cstuff.endBodyStr()]

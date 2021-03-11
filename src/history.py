@@ -7,14 +7,19 @@ import pickle as pickle
 
 
 class History():
+
     @staticmethod
     def history(params, sandable, chains):
+        History.history(params,sandable,chains,'history')
+
+    @staticmethod
+    def historyWithType(params, sandable, chains, fileType):
         # Don't store history if the image is too simple
         if sum(map(len, chains)) < 8:
             return
 
         files = [f for f in listdir(STORE_PATH) if f.startswith('_')]
-        name = '_history%02d'
+        name = '_'+fileType+'%02d'
         sandFormat = name + '.sand'
         pngFormat = name + '.png'
 
@@ -57,15 +62,18 @@ class History():
     def list():
         save = []
         history = []
+        jobs = []
         filenames = listdir(STORE_PATH)
         filenames.sort()
         for name in filenames:
             if name.endswith('sand'):
-                if name.startswith('_'):
+                if name.startswith('_history'):
                     history.append(name[:-5])
+                elif name.startswith('_lastjob'):
+                    jobs.append(name[:-5])
                 else:
                     save.append(name[:-5])
-        return (save, history)
+        return (save, history, jobs)
 
 
 class Memoize():

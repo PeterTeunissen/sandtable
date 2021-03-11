@@ -4,9 +4,7 @@
       <form method="post" action="jobs">
         <table cellspacing="1px" cellpadding="5px" border="1">          
           <tr>
-           <th>ID</th>
            <th>Name</th>
-           <th>Function</th>
            <th>Args</th>
            <th>Schedule</th>
            <th>Next Run Time</th>
@@ -16,13 +14,7 @@
             %for num, job in enumerate(jobs):
               <tr>
                 <td>
-                   {{job['id']}}
-                </td>
-                <td>
                   {{job['name']}}
-                </td>
-                <td>
-                  {{job['function']}}
                 </td>
                 <td>
                   {{job['args']}}
@@ -52,12 +44,21 @@
   </td>
 
   <td valign="TOP" style="text-align:left;">
-   <form method="post" action="jobs" class="auto_submit_form">
-    <input name="method" type="hidden" value="">
-    {{!editor}}
-    <span class="navigation"><a href="cronhelp" target="sand_help">Cron help.</a></span>    
-    <br>
-    <button class="doit" name="action" type="submit" value="add">Add</button>
+    <form method="post" action="jobs">
+        <input  type="hidden" name="formType" value="lightjob" />
+        <button  type="submit" name="action" value="switchView">Add Light Job</button>
+    </form>
+    <form method="post" action="jobs">
+        <input  type="hidden" name="formType" value="drawjob" />
+        <button  type="submit" name="action" value="switchView">Add Draw Job</button>
+    </form>
+    <form method="post" action="jobs" class="auto_submit_form">
+        <input name="method" type="hidden" value="">
+        <input  type="hidden" name="formType" value="{{jobType}}" />
+        {{!editor}}
+        <span class="navigation"><a href="cronhelp" target="sand_help">Cron help...</a></span>    
+        <br>
+        <button class="doit" name="action" type="submit" value="add{{jobType}}">Add</button>
     </form>
    </td>
   </td>
