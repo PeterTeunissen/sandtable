@@ -29,8 +29,9 @@ MACHINE_ACCEL       = 200          # mm/sec^2
 
 LED_PARAMS = {
     'port': "/dev/ttyUSB1",
-    'baud': 115200,
-    'esp_ip': "192.168.1.29"
+    'baud': 74880,
+    'esp_ip': "192.168.1.29",
+    "mode": "http"
 }
 
 MACHINE_PARAMS = {

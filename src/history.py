@@ -10,7 +10,7 @@ class History():
 
     @staticmethod
     def history(params, sandable, chains):
-        History.history(params,sandable,chains,'history')
+        History.historyWithType(params,sandable,chains,'history')
 
     @staticmethod
     def historyWithType(params, sandable, chains, fileType):

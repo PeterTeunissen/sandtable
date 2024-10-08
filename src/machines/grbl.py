@@ -42,7 +42,7 @@ class machiner(Machine):
         while not self.reader.ready:
             time.sleep(.2)
         logging.info('Grbl ready')
-            
+
         for i in initialize:
             self.send(i)
 
@@ -63,7 +63,7 @@ class machiner(Machine):
     def home(self):
         self.send('$X')
         self.send('$H')
-        self.send('G10 P0 L20 X0 Y0 Z0')        
+        self.send('G10 P0 L20 X0 Y0 Z0')
         #self.send('G54')
         #self.send('G92.1')
         #self.send('G91')

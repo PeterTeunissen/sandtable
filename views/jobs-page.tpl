@@ -44,6 +44,9 @@
   </td>
 
   <td valign="TOP" style="text-align:left;">
+    %if errors:
+       <div class="error"><strong>Messages/Errors: {{errors}}</strong></div><br>
+     %end
     <form method="post" action="jobs">
         <input  type="hidden" name="formType" value="lightjob" />
         <button  type="submit" name="action" value="switchView">Add Light Job</button>

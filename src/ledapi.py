@@ -16,12 +16,13 @@ class ledapi():
         return False
 
     def command(self, cmd, pattern=None, params=None):
+        logging.info("ledapi sending socket command cmd %s" % cmd)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((self.hostName, self.hostPort))
             sock.sendall(bytes(json.dumps((cmd, pattern, params))+'\n', encoding='utf-8'))
             resp = sock.recv(2048).decode('utf-8')
             self._status = resp
-            #logging.info("ledapi: received: %s" % resp)
+            logging.info("ledapi: received: %s" % resp)
             self.js = json.loads(json.loads(self._status))
         return self._status
 

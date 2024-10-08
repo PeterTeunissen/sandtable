@@ -285,7 +285,7 @@ if __name__ == "__main__":
         pp.pprint(data)
         #logging.info("Job triggerd: %s" % data[0]['params']['name'])
         if data['jobtype']=='lightjob':
-            with ledapi.ledapi() as led:                
+            with ledapi.ledapi() as led:
                 led.setBrightness(data['params']['brightness'])
                 led.setMode(data['params']['mode'])
                 led.setSpeed(data['params']['speed'])

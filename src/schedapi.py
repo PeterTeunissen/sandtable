@@ -17,19 +17,19 @@ class JobInfo():
     def toJSON(self):
         js = json.dumps(self, default=lambda o: o.__dict__)
         return js
-        
+
     def getTrigger(self):
         return self.trigger
-        
+
     def getName(self):
         return self.name
-        
+
     def getID(self):
         return self.id
-        
+
     def getFunctionName(self):
         return self.functionName
-        
+
     def getParams(self):
         return self.params
 
@@ -43,19 +43,19 @@ class TriggerInfo():
         self.hour=hour
         self.minute=minute
         self.second=second
-        
+
     def __enter__(self):
         return self
 
     def toJSON(self):
         js = json.dumps(self, default=lambda o: o.__dict__)
-        return js        
+        return js
 
 class schedapi():
     def __init__(self, hostName=SCHEDULER_HOST, portNumber=SCHEDULER_PORT):
         self.hostName = hostName
         self.portNumber = portNumber
-        self.BUFFER_SIZE = 2048
+        self.BUFFER_SIZE = 4096
         self._status = None
 
     def __enter__(self):

@@ -55,14 +55,14 @@ class LedThread(Thread):
  
             sts = self.leds.status()
             if sts!="":
-                logging.info("ledaemon Received: %s" % sts)
+                # logging.info("ledaemon Received: %s" % sts)
                 try:
                     st = sts.decode()
-                    #logging.info("Decode done: %s" % st)
+                    # logging.info("Decode done: %s" % st)
                     if st.find("{")!=-1 and st.find("}")!=-1:
                         self.ledstatus = st
                         self.cnt=self.cnt+1
-                        logging.info("Updated ledstatus")
+                        # logging.info("Updated ledstatus")
                     else:
                         logging.info("Discarded")
                 except:
